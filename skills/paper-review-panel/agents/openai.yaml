@@ -1,0 +1,7 @@
+interface:
+  display_name: "Paper Review & Readiness"
+  short_description: "Audit paper readiness before submission"
+  default_prompt: "Use $paper-review-panel to review this draft before submission and identify the decision-changing acceptance risks."
+
+policy:
+  allow_implicit_invocation: true

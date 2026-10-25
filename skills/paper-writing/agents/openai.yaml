@@ -1,0 +1,6 @@
+interface:
+  display_name: "Paper Writing"
+  short_description: "Draft, refine, and check research-paper consistency"
+  default_prompt: "Use $paper-writing to revise this manuscript for coherent argument, precise prose, and evidence-grounded consistency within the requested scope."
+policy:
+  allow_implicit_invocation: true

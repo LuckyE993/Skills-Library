@@ -1,0 +1,1190 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <link rel="icon" href="data:,">
+  <title>{{DOCUMENT_TITLE}} | Paper Share</title>
+  <script>document.documentElement.classList.add("js");</script>
+  <style>
+    :root {
+      --paper: #fbfcfa;
+      --surface: #ffffff;
+      --ink: #18201f;
+      --muted: #586461;
+      --line: #d7ddda;
+      --accent: #0d7377;
+      --accent-soft: #dff0ee;
+      --warm: #b9563f;
+      --stage-shadow: 0 18px 60px rgba(24, 32, 31, 0.16);
+      font-family: Inter, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background: #e8ecea;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: grid;
+      min-height: 100vh;
+      place-items: center;
+      overflow: hidden;
+      background: #e8ecea;
+    }
+
+    button,
+    a {
+      font: inherit;
+    }
+
+    a {
+      color: var(--accent);
+      text-underline-offset: 0.18em;
+    }
+
+    .deck {
+      position: relative;
+      width: min(100vw, calc(100vh * 16 / 9));
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: var(--paper);
+      box-shadow: var(--stage-shadow);
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      min-width: 0;
+      grid-template-rows: auto 1fr auto;
+      gap: 1.5rem;
+      padding: 3.5rem 4.5rem 3.8rem;
+      overflow: hidden;
+      background: var(--paper);
+    }
+
+    .slide > * {
+      min-width: 0;
+    }
+
+    .slide.is-active {
+      display: grid;
+    }
+
+    html:not(.js) body {
+      display: block;
+      overflow: auto;
+    }
+
+    html:not(.js) .deck {
+      width: 100%;
+      height: auto;
+      overflow: visible;
+      aspect-ratio: auto;
+      box-shadow: none;
+    }
+
+    html:not(.js) .slide {
+      position: relative;
+      display: grid;
+      width: min(100vw, calc(100vh * 16 / 9));
+      min-height: min(100vh, calc(100vw * 9 / 16));
+      margin: 0 auto 1rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    html:not(.js) .controls,
+    html:not(.js) .progress-track {
+      display: none;
+    }
+
+    .js [data-fragment] {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(0.5rem);
+      transition:
+        opacity 220ms ease,
+        transform 220ms ease,
+        visibility 0s linear 220ms;
+    }
+
+    .js tr[data-fragment] {
+      transform: none;
+    }
+
+    .js [data-fragment].fragment-visible {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      transition-delay: 0s;
+    }
+
+    .slide::before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0.45rem;
+      height: 100%;
+      content: "";
+      background: var(--accent);
+    }
+
+    .slide-title::before {
+      width: 0.7rem;
+      background: var(--warm);
+    }
+
+    .eyebrow {
+      margin: 0 0 0.7rem;
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 700;
+      line-height: 1.4;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p,
+    blockquote {
+      margin-top: 0;
+    }
+
+    h1,
+    h2,
+    h3 {
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    p,
+    li,
+    cite,
+    dt,
+    dd {
+      overflow-wrap: anywhere;
+    }
+
+    h1 {
+      max-width: 18ch;
+      margin-bottom: 1.2rem;
+      font-size: 3.6rem;
+      line-height: 1.06;
+    }
+
+    h2 {
+      max-width: 28ch;
+      margin-bottom: 0;
+      font-size: 2.5rem;
+      line-height: 1.12;
+    }
+
+    h3 {
+      margin-bottom: 0.55rem;
+      font-size: 1.05rem;
+      line-height: 1.3;
+    }
+
+    p,
+    li {
+      font-size: 1.06rem;
+      line-height: 1.62;
+    }
+
+    .lead {
+      max-width: 55rem;
+      color: var(--muted);
+      font-size: 1.35rem;
+      line-height: 1.5;
+    }
+
+    .source-line {
+      align-self: end;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    .title-body {
+      display: grid;
+      align-content: center;
+      max-width: 75rem;
+    }
+
+    .content {
+      min-height: 0;
+    }
+
+    .split {
+      display: grid;
+      min-height: 0;
+      grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+      gap: 2.5rem;
+      align-items: center;
+    }
+
+    .split-wide-visual {
+      grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+    }
+
+    .causal-stack {
+      display: grid;
+      max-width: 68rem;
+      margin: auto;
+      gap: 1.15rem;
+      align-content: center;
+    }
+
+    .causal-step {
+      position: relative;
+      display: grid;
+      grid-template-columns: 11rem minmax(0, 1fr);
+      gap: 1.5rem;
+      align-items: baseline;
+      padding: 0 0 1rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .causal-step:not(:last-child)::after {
+      position: absolute;
+      bottom: -1.35rem;
+      left: 5.1rem;
+      color: var(--accent);
+      content: "\2193";
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .causal-label {
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 750;
+      line-height: 1.4;
+      text-transform: uppercase;
+    }
+
+    .causal-step p {
+      margin: 0;
+      font-size: 1.12rem;
+      line-height: 1.5;
+    }
+
+    .statement {
+      max-width: 42rem;
+      font-size: 1.55rem;
+      font-weight: 650;
+      line-height: 1.4;
+    }
+
+    .detail-list {
+      margin: 1rem 0 0;
+      padding-left: 1.2rem;
+    }
+
+    .detail-list li + li {
+      margin-top: 0.5rem;
+    }
+
+    .callout {
+      margin: 1.4rem 0 0;
+      padding: 0.25rem 0 0.25rem 1rem;
+      border-left: 0.25rem solid var(--warm);
+      color: var(--muted);
+    }
+
+    .figure-frame {
+      display: grid;
+      min-height: 0;
+      place-items: center;
+      padding: 0.7rem;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .figure-frame img {
+      display: block;
+      width: auto;
+      max-width: 100%;
+      height: auto;
+      max-height: 29rem;
+      object-fit: contain;
+    }
+
+    .figure-frame figcaption {
+      width: 100%;
+      margin-top: 0.55rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+
+    .annotated-visual {
+      display: grid;
+      min-height: 0;
+      grid-template-columns: minmax(0, 1.45fr) minmax(15rem, 0.55fr);
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .annotation-list {
+      display: grid;
+      margin: 0;
+      padding: 0;
+      gap: 1rem;
+      list-style: none;
+      counter-reset: annotation;
+    }
+
+    .annotation-list li {
+      position: relative;
+      padding: 0 0 1rem 2.4rem;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .annotation-list li::before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: grid;
+      width: 1.6rem;
+      height: 1.6rem;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      color: var(--accent);
+      content: counter(annotation);
+      counter-increment: annotation;
+      font-size: 0.76rem;
+      font-weight: 750;
+    }
+
+    .table-stage {
+      display: grid;
+      min-height: 0;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 0.75rem;
+    }
+
+    .table-scroll {
+      display: grid;
+      min-width: 0;
+      min-height: 0;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .table-image {
+      display: block;
+      width: auto;
+      max-width: 100%;
+      height: auto;
+      max-height: 30rem;
+      object-fit: contain;
+      cursor: zoom-in;
+      background: #ffffff;
+    }
+
+    .metric-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .quote-block {
+      margin: 0;
+      padding: 0.3rem 0 0.3rem 1.3rem;
+      border-left: 0.3rem solid var(--accent);
+    }
+
+    .quote-block p {
+      margin-bottom: 0.8rem;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.35rem;
+      line-height: 1.48;
+    }
+
+    .quote-block cite {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-style: normal;
+      line-height: 1.45;
+    }
+
+    .boundary-matrix {
+      display: grid;
+      grid-template-columns: 12rem minmax(0, 1fr);
+      align-content: center;
+      border-top: 1px solid var(--ink);
+    }
+
+    .boundary-row {
+      display: contents;
+    }
+
+    .boundary-key,
+    .boundary-value {
+      margin: 0;
+      padding: 1.15rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .boundary-key {
+      padding-right: 1.5rem;
+      color: var(--accent);
+      font-size: 0.9rem;
+      font-weight: 750;
+    }
+
+    .boundary-value {
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.55;
+    }
+
+    .evidence-map {
+      display: grid;
+      min-height: 0;
+      grid-template-columns: minmax(0, 1fr) minmax(18rem, 1.25fr) minmax(0, 1fr);
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: 1.2rem 2.5rem;
+      align-items: center;
+    }
+
+    .evidence-core {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      padding: 1.5rem 0;
+      border-top: 0.25rem solid var(--accent);
+      border-bottom: 1px solid var(--line);
+      font-size: 1.45rem;
+      font-weight: 700;
+      line-height: 1.42;
+      text-align: center;
+    }
+
+    .evidence-branch {
+      position: relative;
+      margin: 0;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.98rem;
+      line-height: 1.5;
+    }
+
+    .evidence-branch strong {
+      display: block;
+      margin-bottom: 0.3rem;
+      color: var(--ink);
+    }
+
+    .evidence-branch.left::after,
+    .evidence-branch.right::before {
+      position: absolute;
+      top: 50%;
+      width: 1.9rem;
+      border-top: 1px solid var(--accent);
+      content: "";
+    }
+
+    .evidence-branch.left::after {
+      right: -2.2rem;
+    }
+
+    .evidence-branch.right::before {
+      left: -2.2rem;
+    }
+
+    .controls {
+      position: fixed;
+      right: 1.2rem;
+      bottom: 1.15rem;
+      z-index: 20;
+      display: flex;
+      gap: 0.55rem;
+      align-items: center;
+    }
+
+    .icon-button {
+      display: grid;
+      width: 2.75rem;
+      height: 2.75rem;
+      padding: 0;
+      place-items: center;
+      border: 1px solid #bbc4c0;
+      border-radius: 50%;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.94);
+      cursor: pointer;
+    }
+
+    .icon-button:hover,
+    .icon-button:focus-visible {
+      border-color: var(--accent);
+      color: var(--accent);
+      outline: 2px solid transparent;
+    }
+
+    .slide-count {
+      min-width: 4.2rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-align: center;
+    }
+
+    .progress-track {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 19;
+      height: 0.25rem;
+      background: rgba(24, 32, 31, 0.12);
+    }
+
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      background: var(--accent);
+      transition: width 180ms ease;
+    }
+
+    .lightbox {
+      width: 96vw;
+      max-width: none;
+      max-height: 94vh;
+      padding: 1rem;
+      border: 1px solid var(--line);
+      border-radius: 0.35rem;
+      background: #ffffff;
+      overflow: auto;
+    }
+
+    .lightbox::backdrop {
+      background: rgba(12, 18, 17, 0.82);
+    }
+
+    .lightbox img {
+      display: block;
+      width: 100%;
+      max-height: 86vh;
+      margin: auto;
+      object-fit: contain;
+    }
+
+    .lightbox.is-table img {
+      width: auto;
+      max-width: none;
+      max-height: none;
+    }
+
+    .lightbox-close {
+      position: fixed;
+      top: 1.25rem;
+      right: 1.75rem;
+      z-index: 2;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .progress-bar,
+      .js [data-fragment] {
+        transition: none !important;
+      }
+
+      .js [data-fragment] {
+        transform: none !important;
+      }
+    }
+
+    @media (max-width: 1300px) and (min-width: 761px) {
+      .slide {
+        gap: 1rem;
+        padding: 2.7rem 3.5rem 3rem;
+      }
+
+      h1 {
+        font-size: 3.1rem;
+      }
+
+      h2 {
+        font-size: 2.15rem;
+      }
+
+      p,
+      li {
+        font-size: 0.96rem;
+      }
+
+      .figure-frame img,
+      .table-image {
+        max-height: 25rem;
+      }
+    }
+
+    @media (max-width: 760px) {
+      body {
+        display: block;
+        overflow: auto;
+        background: var(--paper);
+      }
+
+      .deck {
+        width: 100%;
+        height: auto;
+        overflow: visible;
+        aspect-ratio: auto;
+        box-shadow: none;
+      }
+
+      .slide,
+      .slide.is-active {
+        position: relative;
+        display: grid;
+        min-height: 100svh;
+        padding: 3.6rem 1.35rem 2.7rem;
+        border-bottom: 1px solid var(--line);
+        overflow: visible;
+      }
+
+      .slide::before {
+        width: 0.3rem;
+      }
+
+      h1 {
+        max-width: none;
+        font-size: 2.45rem;
+      }
+
+      h2 {
+        max-width: none;
+        font-size: 1.85rem;
+      }
+
+      .lead,
+      .statement {
+        font-size: 1.18rem;
+      }
+
+      .split,
+      .split-wide-visual,
+      .annotated-visual,
+      .evidence-map {
+        grid-template-columns: 1fr;
+      }
+
+      .causal-step {
+        grid-template-columns: 1fr;
+        gap: 0.35rem;
+      }
+
+      .causal-step:not(:last-child)::after {
+        left: 0.25rem;
+      }
+
+      .boundary-matrix {
+        grid-template-columns: 1fr;
+        border-top: 0;
+      }
+
+      .boundary-row {
+        display: block;
+        border-top: 1px solid var(--line);
+      }
+
+      .boundary-key,
+      .boundary-value {
+        border-bottom: 0;
+      }
+
+      .boundary-key {
+        padding-bottom: 0.25rem;
+      }
+
+      .boundary-value {
+        padding-top: 0;
+      }
+
+      .evidence-core {
+        grid-column: 1;
+        grid-row: auto;
+        text-align: left;
+      }
+
+      .evidence-branch.left::after,
+      .evidence-branch.right::before {
+        display: none;
+      }
+
+      .figure-frame img,
+      .table-image {
+        max-height: none;
+      }
+
+      .table-scroll {
+        display: block;
+        overflow-x: auto;
+      }
+
+      .table-image {
+        width: 58rem;
+        max-width: none;
+      }
+
+      .controls,
+      .progress-track {
+        display: none;
+      }
+
+      .lightbox {
+        width: 96vw;
+        padding: 0.65rem;
+      }
+
+      .js [data-fragment] {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+        transition: none !important;
+      }
+    }
+
+    @media print {
+      @page {
+        size: 13.333in 7.5in;
+        margin: 0;
+      }
+
+      body {
+        display: block;
+        overflow: visible;
+        background: #ffffff;
+      }
+
+      .deck {
+        width: 100%;
+        height: auto;
+        overflow: visible;
+        box-shadow: none;
+      }
+
+      .slide,
+      .slide.is-active {
+        position: relative;
+        display: grid;
+        width: 100%;
+        height: 7.5in;
+        break-after: page;
+        page-break-after: always;
+      }
+
+      .controls,
+      .progress-track,
+      .lightbox {
+        display: none !important;
+      }
+
+      .js [data-fragment] {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" id="deck" aria-label="{{PAPER_TITLE}}">
+    <section class="slide slide-title is-active" id="slide-1" aria-hidden="false">
+      <header>
+        <p class="eyebrow">{{VENUE_OR_IDENTIFIER}}</p>
+      </header>
+      <div class="title-body">
+        <h1>{{PAPER_TITLE}}</h1>
+        <p class="lead">{{PAPER_SUBTITLE}}</p>
+      </div>
+      <p class="source-line">{{AUTHORS_AND_AFFILIATIONS}}</p>
+    </section>
+
+    <section class="slide" id="slide-2" data-visual-pattern="vertical-causal" aria-hidden="true">
+      <header>
+        <p class="eyebrow">{{SECTION_LABEL}}</p>
+        <h2>{{RESEARCH_QUESTION_TITLE}}</h2>
+      </header>
+      <div class="content causal-stack">
+        <div class="causal-step" data-fragment="1">
+          <span class="causal-label">{{CURRENT_PRACTICE_LABEL}}</span>
+          <p>{{PRIOR_APPROACH_POINT}}</p>
+        </div>
+        <div class="causal-step" data-fragment="2">
+          <span class="causal-label">{{UNRESOLVED_TENSION_LABEL}}</span>
+          <p>{{WHY_THE_QUESTION_MATTERS}}</p>
+        </div>
+        <div class="causal-step" data-fragment="3">
+          <span class="causal-label">{{RESEARCH_QUESTION_LABEL}}</span>
+          <p>{{RESEARCH_QUESTION_STATEMENT}}</p>
+        </div>
+      </div>
+      <p class="source-line">{{SOURCE_OR_CONTEXT}}</p>
+    </section>
+
+    <section class="slide" id="slide-3" aria-hidden="true">
+      <header>
+        <p class="eyebrow">{{SECTION_LABEL}}</p>
+        <h2>{{MAIN_CLAIM_TITLE}}</h2>
+      </header>
+      <div class="content split">
+        <div>
+          <p class="statement">{{MAIN_CLAIM}}</p>
+          <p>{{CLAIM_SCOPE_AND_ASSUMPTIONS}}</p>
+        </div>
+        <blockquote class="quote-block">
+          <p>{{FULL_ENGLISH_QUOTATION}}</p>
+          <cite>{{FULL_SOURCE_TITLE_AND_CITATION}}</cite>
+        </blockquote>
+      </div>
+      <p class="source-line">{{PAPER_CITATION}}</p>
+    </section>
+
+    <section class="slide" id="slide-4" data-visual-pattern="annotated-figure" aria-hidden="true">
+      <header>
+        <p class="eyebrow">{{SECTION_LABEL}}</p>
+        <h2>{{METHOD_TITLE}}</h2>
+      </header>
+      <div class="content annotated-visual">
+        <figure class="figure-frame">
+          <img class="zoomable" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='620' viewBox='0 0 1200 620'%3E%3Crect width='1200' height='620' fill='%23f7f9f8'/%3E%3Cpath d='M180 310H1020' stroke='%230d7377' stroke-width='8'/%3E%3Ccircle cx='180' cy='310' r='78' fill='%23ffffff' stroke='%230d7377' stroke-width='5'/%3E%3Ccircle cx='600' cy='310' r='92' fill='%23dff0ee' stroke='%230d7377' stroke-width='5'/%3E%3Ccircle cx='1020' cy='310' r='78' fill='%23ffffff' stroke='%23b9563f' stroke-width='5'/%3E%3Ctext x='180' y='325' text-anchor='middle' font-family='Arial' font-size='34' fill='%2318201f'%3ESource%3C/text%3E%3Ctext x='600' y='325' text-anchor='middle' font-family='Arial' font-size='34' fill='%2318201f'%3EModel%3C/text%3E%3Ctext x='1020' y='325' text-anchor='middle' font-family='Arial' font-size='34' fill='%2318201f'%3ETarget%3C/text%3E%3C/svg%3E" alt="{{METHOD_FIGURE_ALT}}" data-template-placeholder="method-figure" data-zoomable tabindex="0" role="button" aria-haspopup="dialog">
+          <figcaption>{{METHOD_FIGURE_SOURCE}}</figcaption>
+        </figure>
+        <ol class="annotation-list">
+          <li data-fragment="1">{{METHOD_STEP_1}}</li>
+          <li data-fragment="2">{{METHOD_STEP_2}}</li>
+          <li data-fragment="3">{{METHOD_STEP_3}}</li>
+        </ol>
+      </div>
+      <p class="source-line">{{METHOD_SOURCE_LINE}}</p>
+    </section>
+
+    <section class="slide" id="slide-5" aria-hidden="true">
+      <header>
+        <p class="eyebrow">{{SECTION_LABEL}}</p>
+        <h2>{{EVIDENCE_TITLE}}</h2>
+      </header>
+      <div class="content table-stage">
+        <div class="table-scroll">
+          <img class="table-image zoomable" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='600' viewBox='0 0 1600 600'%3E%3Crect width='1600' height='600' fill='white'/%3E%3Cg stroke='%2318201f' stroke-width='4'%3E%3Cpath d='M45 55H1555M45 165H1555M45 535H1555'/%3E%3C/g%3E%3Cg font-family='Georgia' font-size='48' fill='%2318201f'%3E%3Ctext x='85' y='130'%3EMethod%3C/text%3E%3Ctext x='700' y='130'%3EMetric 1%3C/text%3E%3Ctext x='1030' y='130'%3EMetric 2%3C/text%3E%3Ctext x='1350' y='130'%3EMetric 3%3C/text%3E%3Ctext x='85' y='255'%3EBaseline A%3C/text%3E%3Ctext x='85' y='355'%3EBaseline B%3C/text%3E%3Ctext x='85' y='465' font-weight='bold'%3EProposed%3C/text%3E%3Ctext x='760' y='255'%3EXX.X%3C/text%3E%3Ctext x='760' y='355'%3EXX.X%3C/text%3E%3Ctext x='760' y='465' font-weight='bold'%3EXX.X%3C/text%3E%3Ctext x='1100' y='255'%3EXX.X%3C/text%3E%3Ctext x='1100' y='355'%3EXX.X%3C/text%3E%3Ctext x='1100' y='465' font-weight='bold'%3EXX.X%3C/text%3E%3Ctext x='1410' y='255'%3EX.XX%3C/text%3E%3Ctext x='1410' y='355'%3EX.XX%3C/text%3E%3Ctext x='1410' y='465' font-weight='bold'%3EX.XX%3C/text%3E%3C/g%3E%3C/svg%3E" alt="{{RESULT_TABLE_ALT}}" data-template-placeholder="result-table" data-zoomable data-table-primary tabindex="0" role="button" aria-haspopup="dialog">
+        </div>
+        <p class="metric-note">{{METRIC_DIRECTION_AND_RESULT_SCOPE}}</p>
+      </div>
+      <p class="source-line">{{TABLE_SOURCE_LINE}}</p>
+    </section>
+
+    <section class="slide" id="slide-6" data-visual-pattern="matrix" aria-hidden="true">
+      <header>
+        <p class="eyebrow">{{SECTION_LABEL}}</p>
+        <h2>{{BOUNDARY_TITLE}}</h2>
+      </header>
+      <dl class="content boundary-matrix">
+        <div class="boundary-row">
+          <dt class="boundary-key">{{SUPPORTED_HEADING}}</dt>
+          <dd class="boundary-value">{{SUPPORTED_SCOPE}}</dd>
+        </div>
+        <div class="boundary-row">
+          <dt class="boundary-key">{{TRADEOFF_HEADING}}</dt>
+          <dd class="boundary-value">{{TRADEOFF_OR_EXCEPTION}}</dd>
+        </div>
+        <div class="boundary-row">
+          <dt class="boundary-key">{{OPEN_QUESTION_HEADING}}</dt>
+          <dd class="boundary-value">{{OPEN_QUESTION}}</dd>
+        </div>
+      </dl>
+      <p class="source-line">{{BOUNDARY_SOURCE_LINE}}</p>
+    </section>
+
+    <section class="slide" id="slide-7" data-visual-pattern="evidence-map" aria-hidden="true">
+      <header>
+        <p class="eyebrow">{{SECTION_LABEL}}</p>
+        <h2>{{TAKEAWAY_TITLE}}</h2>
+      </header>
+      <div class="content evidence-map">
+        <p class="evidence-branch left"><strong>{{EVIDENCE_HEADING_1}}</strong>{{EVIDENCE_POINT_1}}</p>
+        <p class="evidence-branch left"><strong>{{EVIDENCE_HEADING_2}}</strong>{{EVIDENCE_POINT_2}}</p>
+        <p class="evidence-core">{{FINAL_TAKEAWAY}}</p>
+        <p class="evidence-branch right"><strong>{{BOUNDARY_HEADING}}</strong>{{FINAL_BOUNDARY}}</p>
+        <p class="evidence-branch right"><strong>{{DISCUSSION_HEADING}}</strong>{{DISCUSSION_QUESTION}}</p>
+      </div>
+      <p class="source-line">{{PAPER_PROJECT_AND_CODE_LINKS}}</p>
+    </section>
+  </main>
+
+  <div class="controls" aria-label="Presentation controls">
+    <button class="icon-button" id="previous-slide" type="button" title="Previous step" aria-label="Previous step">
+      <span aria-hidden="true">&larr;</span>
+    </button>
+    <span class="slide-count" id="slide-count" aria-live="polite">1 / 7</span>
+    <button class="icon-button" id="next-slide" type="button" title="Next step" aria-label="Next step">
+      <span aria-hidden="true">&rarr;</span>
+    </button>
+  </div>
+
+  <div class="progress-track" aria-hidden="true">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+
+  <dialog class="lightbox" id="image-lightbox" aria-label="Enlarged figure">
+    <form method="dialog">
+      <button class="icon-button lightbox-close" type="submit" title="Close" aria-label="Close enlarged figure">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </form>
+    <img id="lightbox-image" alt="" data-decorative>
+  </dialog>
+
+  <script>
+    (function () {
+      var deck = document.getElementById("deck");
+      var slides = Array.from(document.querySelectorAll(".slide"));
+      var previousButton = document.getElementById("previous-slide");
+      var nextButton = document.getElementById("next-slide");
+      var counter = document.getElementById("slide-count");
+      var progress = document.getElementById("progress-bar");
+      var lightbox = document.getElementById("image-lightbox");
+      var lightboxImage = document.getElementById("lightbox-image");
+      var mobileQuery = window.matchMedia("(max-width: 760px)");
+      var current = 0;
+      var lightboxTrigger = null;
+      var fragmentElements = slides.map(function (slide) {
+        return Array.from(slide.querySelectorAll("[data-fragment]"));
+      });
+      var permanentlyHiddenFragments = new WeakSet();
+      var fragmentGroups = fragmentElements.map(function (elements) {
+        var groups = [];
+        elements.forEach(function (element) {
+          if (element.getAttribute("aria-hidden") === "true") {
+            permanentlyHiddenFragments.add(element);
+          }
+          if (!groups.includes(element.dataset.fragment)) {
+            groups.push(element.dataset.fragment);
+          }
+        });
+        return groups;
+      });
+      var fragmentProgress = slides.map(function () {
+        return 0;
+      });
+
+      function fragmentsEnabled() {
+        return !mobileQuery.matches;
+      }
+
+      function syncSlideFragments(index) {
+        var groups = fragmentGroups[index];
+        var effectiveProgress = fragmentsEnabled()
+          ? fragmentProgress[index]
+          : groups.length;
+        fragmentElements[index].forEach(function (element) {
+          var groupIndex = groups.indexOf(element.dataset.fragment);
+          var visible = groupIndex < effectiveProgress;
+          element.classList.toggle("fragment-visible", visible);
+          element.setAttribute(
+            "aria-hidden",
+            permanentlyHiddenFragments.has(element) ? "true" : String(!visible)
+          );
+        });
+        return { groups: groups, progress: effectiveProgress };
+      }
+
+      function syncAllFragments() {
+        slides.forEach(function (_, index) {
+          syncSlideFragments(index);
+        });
+      }
+
+      function showSlide(index) {
+        current = Math.max(0, Math.min(index, slides.length - 1));
+        slides.forEach(function (slide, slideIndex) {
+          var active = slideIndex === current;
+          slide.classList.toggle("is-active", active);
+          slide.setAttribute("aria-hidden", mobileQuery.matches ? "false" : String(!active));
+        });
+        var state = syncSlideFragments(current);
+        var fragmentState = state.groups.length && fragmentsEnabled()
+          ? " · " + String(state.progress) + " / " + String(state.groups.length)
+          : "";
+        counter.textContent = String(current + 1) + " / " + String(slides.length) + fragmentState;
+        counter.setAttribute(
+          "aria-label",
+          state.groups.length && fragmentsEnabled()
+            ? "Slide " + String(current + 1) + " of " + String(slides.length)
+              + "; step " + String(state.progress) + " of " + String(state.groups.length)
+            : "Slide " + String(current + 1) + " of " + String(slides.length)
+        );
+        progress.style.width = String(((current + 1) / slides.length) * 100) + "%";
+        if (!mobileQuery.matches) {
+          history.replaceState(null, "", "#slide-" + String(current + 1));
+        }
+      }
+
+      function advancePresentation() {
+        if (fragmentsEnabled() && fragmentProgress[current] < fragmentGroups[current].length) {
+          fragmentProgress[current] += 1;
+          showSlide(current);
+          return;
+        }
+        showSlide(current + 1);
+      }
+
+      function retreatPresentation() {
+        if (fragmentsEnabled() && fragmentProgress[current] > 0) {
+          fragmentProgress[current] -= 1;
+          showSlide(current);
+          return;
+        }
+        showSlide(current - 1);
+      }
+
+      function initialSlide() {
+        var match = window.location.hash.match(/^#slide-(\d+)$/);
+        if (!match) {
+          return 0;
+        }
+        return Math.min(Math.max(Number(match[1]) - 1, 0), slides.length - 1);
+      }
+
+      previousButton.addEventListener("click", function () {
+        retreatPresentation();
+      });
+
+      nextButton.addEventListener("click", function () {
+        advancePresentation();
+      });
+
+      function isInteractiveTarget(target) {
+        if (!(target instanceof Element)) {
+          return false;
+        }
+        return Boolean(target.closest(
+          "a, button, img, input, select, textarea, summary, "
+          + "[contenteditable='true'], [role='button'], [data-zoomable]"
+        ));
+      }
+
+      function isTypingTarget(target) {
+        if (!(target instanceof Element)) {
+          return false;
+        }
+        return Boolean(target.closest("input, select, textarea, [contenteditable='true']"));
+      }
+
+      deck.addEventListener("click", function (event) {
+        if (
+          mobileQuery.matches
+          || event.defaultPrevented
+          || isInteractiveTarget(event.target)
+          || !(event.target instanceof Element)
+          || !event.target.closest(".slide.is-active")
+        ) {
+          return;
+        }
+        var selection = window.getSelection();
+        if (selection && !selection.isCollapsed && selection.toString().trim()) {
+          return;
+        }
+        advancePresentation();
+      });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.defaultPrevented) {
+          return;
+        }
+        if (lightbox.open || mobileQuery.matches) {
+          return;
+        }
+        if (isTypingTarget(event.target)) {
+          return;
+        }
+        if (event.key === " " && isInteractiveTarget(event.target)) {
+          return;
+        }
+        if (["ArrowRight", "ArrowDown", "PageDown", " "].includes(event.key)) {
+          event.preventDefault();
+          advancePresentation();
+        } else if (["ArrowLeft", "ArrowUp", "PageUp"].includes(event.key)) {
+          event.preventDefault();
+          retreatPresentation();
+        } else if (event.key === "Home") {
+          event.preventDefault();
+          showSlide(0);
+        } else if (event.key === "End") {
+          event.preventDefault();
+          showSlide(slides.length - 1);
+        }
+      });
+
+      document.querySelectorAll("[data-zoomable]").forEach(function (image) {
+        function openImage() {
+          lightboxTrigger = image;
+          lightboxImage.src = image.currentSrc || image.src;
+          lightboxImage.alt = image.alt;
+          lightbox.classList.toggle("is-table", Boolean(image.closest(".table-stage")));
+          if (typeof lightbox.showModal === "function") {
+            lightbox.showModal();
+          } else {
+            lightbox.setAttribute("open", "");
+          }
+        }
+
+        image.addEventListener("click", openImage);
+        image.addEventListener("keydown", function (event) {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openImage();
+          }
+        });
+      });
+
+      function restoreLightboxTrigger() {
+        lightboxImage.removeAttribute("src");
+        if (lightboxTrigger) {
+          lightboxTrigger.focus();
+        }
+      }
+
+      lightbox.addEventListener("click", function (event) {
+        if (event.target === lightbox) {
+          lightbox.close();
+        }
+      });
+
+      lightbox.addEventListener("close", restoreLightboxTrigger);
+
+      function handleLayoutChange() {
+        syncAllFragments();
+        showSlide(current);
+      }
+
+      if (typeof mobileQuery.addEventListener === "function") {
+        mobileQuery.addEventListener("change", handleLayoutChange);
+      } else {
+        mobileQuery.addListener(handleLayoutChange);
+      }
+
+      syncAllFragments();
+      showSlide(initialSlide());
+    }());
+  </script>
+</body>
+</html>
